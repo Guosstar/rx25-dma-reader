@@ -43,7 +43,7 @@ a yellow exclamation mark.
 
 ```
 rtl/          FPGA sources: src/ (SystemVerilog + XDC), ip/, build TCL at the root
-third_party/  corundum + taxi, vendored (BSD-3), needed by the build
+third_party/  corundum (BSD-3) + taxi (CERN-OHL-S), vendored, needed by the build
 host/
   leechcore/  LeechCore device backend + the LcRead fix
   driver/     Windows KMDF driver for the initiating board
@@ -149,6 +149,28 @@ is a grant of permission to access a system you do not control.
 Host-side code that links against LeechCore inherits LeechCore's GPL-3.0. See `LICENSE`.
 PCILeech itself is AGPL-3.0 and is **not** redistributed here; use your own build.
 
+Vendored trees keep their own licences in place. `third_party/corundum/LICENSE` is BSD-3-Clause
+(the tree also carries MIT and Apache-2.0 components). `third_party/taxi/LICENSE` is
+**CERN-OHL-S-2.0**, which is strongly reciprocal: `rtl/src` instantiates Taxi modules directly,
+so shipping a design built from this repository may carry obligations that go beyond this
+repository's own GPL-3.0. Read `third_party/taxi/LICENSE` before you distribute hardware.
+
+## Referenced projects
+
+These are the upstream GitHub projects this repository builds on.
+
+| Upstream | Licence | Role here |
+| --- | --- | --- |
+| [ufrisk/LeechCore](https://github.com/ufrisk/LeechCore) | GPL-3.0 | `host/leechcore/` is built on it — `leechcore.c` / `leechcore.h` plus the `rx25` device backend (`device_rx25*.c`) and the `LcRead` fix. |
+| [ufrisk/pcileech](https://github.com/ufrisk/pcileech) | AGPL-3.0 | Not redistributed. An unmodified `pcileech.exe` is used as the upper-layer integration check (`-device rx25`). |
+| [corundum/corundum](https://github.com/corundum/corundum) | BSD-3-Clause | Vendored unmodified in `third_party/corundum`; supplies the FPGA build scaffolding and library sources. |
+| [fpganinja/taxi](https://github.com/fpganinja/taxi) | CERN-OHL-S-2.0 | Vendored unmodified in `third_party/taxi`; supplies `taxi_axis_if`, `taxi_axis_async_fifo`, `taxi_sync_signal`, `taxi_sync_reset`, `taxi_apb_if` and `taxi_eth_mac_25g_us`, used throughout `rtl/src`. |
+
+Each vendored tree keeps its upstream `LICENSE` and `AUTHORS` files unmodified.
+
 ## Acknowledgements
 
 Built on [LeechCore](https://github.com/ufrisk/LeechCore) by Ulf Frisk.
+FPGA build flow and link-layer components come from [Corundum](https://github.com/corundum/corundum)
+and [Taxi](https://github.com/fpganinja/taxi); the driverless-DMA approach follows the
+[PCILeech](https://github.com/ufrisk/pcileech) project.
