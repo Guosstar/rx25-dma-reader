@@ -10,7 +10,6 @@
 *.exp
 x64/
 Release/
-files/
 build_*/
 .Xil/
 .cache/
@@ -21,3 +20,16 @@ build_*/
 outputs/
 __pycache__/
 *.pyc
+
+# editor and Vivado backups (never source, always noise)
+*.bak
+*.bak_*
+*.idbak
+*.orig
+*.rej
+*~
+
+# LeechCore checkout fetched by tools/scripts/fetch_leechcore.cmd.
+# It is cloned, not vendored: the files that this project actually changes
+# live in host/leechcore/, and upstream is GPL-3.0.
+third_party/LeechCore/
