@@ -4,8 +4,25 @@ if not defined RX25_ROOT set "RX25_ROOT=%~dp0..\.."
 setlocal enabledelayedexpansion
 title LeechCore link build (Release x64)
 set "OUTDIR=%RX25_ROOT%\outputs\leechcore_build"
-set "SLN=%RX25_ROOT%\pcileech-as02-3p\LeechCore\LeechCore.sln"
 if not exist "%OUTDIR%" mkdir "%OUTDIR%"
+
+rem ---- locate the LeechCore checkout -----------------------------------------
+rem Override with LEECHCORE_ROOT.  Otherwise try the location fetch_leechcore.cmd
+rem clones into, then a sibling checkout, then the old private layout so existing
+rem benches keep working.
+if not defined LEECHCORE_ROOT if exist "%RX25_ROOT%\third_party\LeechCore\LeechCore.sln" set "LEECHCORE_ROOT=%RX25_ROOT%\third_party\LeechCore"
+if not defined LEECHCORE_ROOT if exist "%RX25_ROOT%\..\LeechCore\LeechCore.sln" set "LEECHCORE_ROOT=%RX25_ROOT%\..\LeechCore"
+if not defined LEECHCORE_ROOT if exist "%RX25_ROOT%\pcileech-as02-3p\LeechCore\LeechCore.sln" set "LEECHCORE_ROOT=%RX25_ROOT%\pcileech-as02-3p\LeechCore"
+if not defined LEECHCORE_ROOT (
+  echo [ERROR] no LeechCore checkout found.
+  echo         Run tools\scripts\fetch_leechcore.cmd once, or set LEECHCORE_ROOT
+  echo         to the directory that holds LeechCore.sln.
+  echo.
+  if /i not "%~1"=="nopause" pause
+  exit /b 4
+)
+set "SLN=%LEECHCORE_ROOT%\LeechCore.sln"
+set "DLL=%LEECHCORE_ROOT%\files\leechcore.dll"
 
 rem Everything below is captured to a file as well, so the evidence survives
 rem even if the window is closed.  This script never exits silently.
@@ -19,8 +36,8 @@ echo  exit=%RC%
 echo  console log : %OUTDIR%\build_console.log
 echo  msbuild log : %OUTDIR%\link.log   (only if msbuild actually ran)
 echo ============================================================
-if exist "%RX25_ROOT%\pcileech-as02-3p\LeechCore\files\leechcore.dll" (
-  for %%f in ("%RX25_ROOT%\pcileech-as02-3p\LeechCore\files\leechcore.dll") do echo  DLL OK      : %%~f  %%~zf bytes  %%~tf
+if exist "%DLL%" (
+  for %%f in ("%DLL%") do echo  DLL OK      : %%~f  %%~zf bytes  %%~tf
 ) else (
   echo  DLL MISSING : the build did not produce leechcore.dll
 )

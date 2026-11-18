@@ -14,7 +14,19 @@ set "PY=python"
 if not exist "%PY%" set "PY=python"
 set "LOGDIR=%RX25_ROOT%\outputs\leechcore_build"
 set "LCLOG=%LOGDIR%\lc_test.log"
-set "DLL=%RX25_ROOT%\pcileech-as02-3p\LeechCore\files\leechcore.dll"
+
+rem Resolve the LeechCore checkout exactly like build_leechcore_link.cmd does and
+rem export it, so lc_rx25_test.py looks at the same tree the dll came from.
+if not defined LEECHCORE_ROOT if exist "%RX25_ROOT%\third_party\LeechCore\LeechCore.sln" set "LEECHCORE_ROOT=%RX25_ROOT%\third_party\LeechCore"
+if not defined LEECHCORE_ROOT if exist "%RX25_ROOT%\..\LeechCore\LeechCore.sln" set "LEECHCORE_ROOT=%RX25_ROOT%\..\LeechCore"
+if not defined LEECHCORE_ROOT if exist "%RX25_ROOT%\pcileech-as02-3p\LeechCore\LeechCore.sln" set "LEECHCORE_ROOT=%RX25_ROOT%\pcileech-as02-3p\LeechCore"
+if not defined LEECHCORE_ROOT (
+  echo [ERROR] no LeechCore checkout found.
+  echo         Run tools\scripts\fetch_leechcore.cmd once, or set LEECHCORE_ROOT.
+  pause
+  exit /b 4
+)
+set "DLL=%LEECHCORE_ROOT%\files\leechcore.dll"
 if not exist "%LOGDIR%" mkdir "%LOGDIR%"
 
 echo ============================================================

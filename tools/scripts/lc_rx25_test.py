@@ -14,6 +14,8 @@ import sys
 import time
 from ctypes import wintypes
 
+import rx25_paths
+
 MAX_PATH = 260
 LC_CONFIG_VERSION = 0xC0FD0002
 MEM_SCATTER_VERSION = 0xC0FE0002
@@ -185,20 +187,10 @@ def _opt_int(name, default=0):
 
 
 def main():
-    here = os.path.dirname(os.path.abspath(__file__))
-    candidates = [
-        os.path.join(here, "..", "..", "pcileech-as02-3p", "LeechCore", "files", "leechcore.dll"),
-        os.path.join(here, "..", "pcileech-as02-3p", "LeechCore", "files", "leechcore.dll"),
-        os.path.join(here, "leechcore.dll"),
-    ]
-    dll_path = None
-    for c in candidates:
-        c = os.path.abspath(c)
-        if os.path.exists(c):
-            dll_path = c
-            break
+    dll_path = rx25_paths.find_leechcore_dll()
     if dll_path is None:
-        dll_path = os.path.abspath(candidates[0])
+        print("FAIL: leechcore.dll not found -- " + rx25_paths.leechcore_hint())
+        return 2
     print("=" * 60)
     print("RX25 LeechCore backend test")
     print("dll  :", dll_path)

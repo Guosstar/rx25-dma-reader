@@ -45,15 +45,25 @@ necessary but not sufficient.
 | Script | Use |
 |---|---|
 | `vivado_generate_project_as02.tcl` | create the project; single source of truth for parameters |
-| `vivado_build_rx25_as02.tcl` | full build for the initiator image |
-| `vivado_build_rx25_resp.tcl` | full build for the responder image |
+| `vivado_build_rx25_as02.tcl` | full build for the initiator image; set `AS02_BUILD_STEP=full` for a bitstream |
+| `vivado_build_rx25_as02.tcl` with `AS02_RX25_RESPONDER=1` | full build for the responder image |
 | `vivado_program_as02.tcl` | load a `.bit` over JTAG (`AS02_PROGRAM_BIT`, `AS02_PROGRAM_TARGET`) |
 | `flash_rx25.tcl` | build an MCS and burn it to the on-board QSPI |
 
-Three helper scripts (`vivado_bit_rx25_init_tmp.tcl`, `vivado_bit_rx25_resp.tcl`,
-`vivado_rebuild_rx25_id.tcl`) regenerate a bitstream from an existing `routed.dcp` and still carry
-the authoring machine's absolute paths. They are kept for reference; edit the two `set dcp` /
-`set out` lines before using them.
+There is no separate responder build script: both ends are the same RTL with different generics,
+and `vivado_build_rx25_as02.tcl` is the only place those generics are set. An earlier revision of
+this table named a `vivado_build_rx25_resp.tcl` that never existed.
+
+Two helper scripts work on an existing build tree instead of building from scratch:
+
+| Script | Use |
+|---|---|
+| `vivado_bit_rx25_resp.tcl` | bitstream from a routed checkpoint, skipping phys_opt: `-tclargs <routed.dcp> [<out.bit>]` |
+| `vivado_rebuild_rx25_id.tcl` | resynthesise and reimplement an existing project in place: `-tclargs <project.xpr>` |
+
+Both take the path as an argument and only fall back to environment variables when it is omitted
+(`RX25_BUILD_DIR`, plus optional `RX25_PROJECT` for the project directory name). No machine path
+is baked into any script under `rtl/`.
 
 ## 3. Load the boards
 
@@ -83,16 +93,30 @@ The files in `host/leechcore/` are the customisations on top of upstream LeechCo
 | `leechcore.c` | upstream, plus the `LcRead` fix described below |
 | `leechcore.h` | upstream, unchanged |
 
-Upstream LeechCore itself is **not** vendored here. Clone it, then copy the four files above over
-the corresponding files in `LeechCore/leechcore/`:
+Upstream LeechCore itself is **not** vendored here: upstream is GPL-3.0 and only a handful of
+lines change. One script does the clone and applies the overlay:
 
-```bash
-git clone https://github.com/ufrisk/LeechCore
-cp host/leechcore/*.c host/leechcore/*.h LeechCore/leechcore/
+```bat
+tools\scripts\fetch_leechcore.cmd
 ```
 
-The helper script `tools/scripts/build_leechcore_link.cmd` expects that result at
-`<root>/pcileech-as02-3p/LeechCore` — adjust `SLN` if you keep the checkout elsewhere.
+It clones `https://github.com/ufrisk/LeechCore` into `third_party\LeechCore` (git-ignored) and
+copies the four files above over the copies in `LeechCore\leechcore\`. Re-running it resets the
+overlay, so it is also the way to recover after pulling a new upstream revision.
+
+To keep the checkout somewhere else, set `LEECHCORE_ROOT` before running anything:
+
+```bat
+set LEECHCORE_ROOT=D:\src\LeechCore
+```
+
+Nothing else needs editing. `build_leechcore_link.cmd`, `A_rebuild_and_test.cmd` and the Python
+tools all resolve the same way, first hit wins:
+
+1. `LEECHCORE_ROOT`
+2. `third_party\LeechCore`
+3. `..\LeechCore` (sibling checkout)
+4. `pcileech-as02-3p\LeechCore` (the old private layout, still accepted)
 
 Build:
 

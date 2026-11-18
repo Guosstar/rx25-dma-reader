@@ -30,10 +30,11 @@ import sys
 import time
 
 import lc_rx25_test as base
+import rx25_paths
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+ROOT = rx25_paths.repo_root()
 PCILEECH_DIR = os.path.join(ROOT, "tools", "pcileech")
-OUR_DLL = os.path.join(ROOT, "host", "build", "leechcore.dll")
+OUR_DLL = rx25_paths.find_leechcore_dll() or os.path.join(ROOT, "host", "build", "leechcore.dll")
 PAGE = 0x10001000
 OUT_DIR = os.path.join(ROOT, "outputs", "pcileech_check")
 
