@@ -226,8 +226,10 @@ module asmcehnk_as02_core #(
     assign tick_100mhz_ce = !net_rst &&
         (tick_100mhz_toggle_sync != tick_100mhz_toggle_sync_d);
 
-    // 独立桥接寄存器隔离PCIe IP内部user_reset扇出，再跨入SFP1 TX域；
-    // 最终仅合并同域复位，完整UDP/asmcehnk数据面仍位于SFP1 TX域。
+    // A dedicated bridge register isolates the PCIe IP's internal user_reset
+    // fan-out before the reset crosses into the SFP1 TX domain.  Only resets
+    // from the same domain are merged; the UDP/asmcehnk datapath stays in the
+    // SFP1 TX domain throughout.
     always_ff @(posedge pcie_clk or posedge pcie_rst) begin
         if (pcie_rst) begin
             pcie_rst_bridge <= 1'b1;

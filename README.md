@@ -168,6 +168,16 @@ These are the upstream GitHub projects this repository builds on.
 
 Each vendored tree keeps its upstream `LICENSE` and `AUTHORS` files unmodified.
 
+### Provenance of `rtl/src`
+
+The PCIe/TLP scaffolding under `rtl/src` predates this project. The `asmcehnk_*` files still carry
+their original headers (`Author: Ulf Frisk, asmcehnk@frizk.net`) and come from Ulf Frisk's AS02
+FPGA work, the hardware side of PCILeech. They are kept here with those notices intact, as GPL-3.0
+requires, and this project does not claim authorship of them.
+
+What was written for RX25 is the request engine, the PL11 link protocol, the descriptor and
+completion path, the diagnostics built around it, and everything under `host/`.
+
 ## Acknowledgements
 
 Built on [LeechCore](https://github.com/ufrisk/LeechCore) by Ulf Frisk.
