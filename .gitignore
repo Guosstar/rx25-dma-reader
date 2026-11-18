@@ -1,0 +1,23 @@
+# build products can be regenerated; see docs/reproduce.md
+*.bit
+*.mcs
+*.prm
+*.dcp
+*.sys
+*.obj
+*.pdb
+*.lib
+*.exp
+x64/
+Release/
+files/
+build_*/
+.Xil/
+.cache/
+*.log
+*.jou
+*.raw
+*.bin
+outputs/
+__pycache__/
+*.pyc

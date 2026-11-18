@@ -1,0 +1,62 @@
+; Buffer-only development package, limited to RX25's exact PCI ID.
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
+Provider=%Provider%
+CatalogFile=rx25dma.cat
+PnpLockdown=1
+DriverVer=11/15/2026,0.1.4.3
+
+[Manufacturer]
+%Provider%=Models,NTamd64.10.0...19041
+
+[Models.NTamd64.10.0...19041]
+%Device%=DeviceInstall,PCI\VEN_1234&DEV_C070&SUBSYS_000710EE&REV_02
+
+[DestinationDirs]
+DriverCopy=13
+
+[SourceDisksNames]
+1=%Disk%,,,
+
+[SourceDisksFiles]
+rx25dma.sys=1
+
+[DeviceInstall.NT]
+CopyFiles=DriverCopy
+
+[DriverCopy]
+rx25dma.sys
+
+[DeviceInstall.NT.HW]
+AddReg=HardwareSecurity
+
+[HardwareSecurity]
+HKR,,Security,,"D:P(A;;GA;;;SY)(A;;GA;;;BA)"
+
+[DeviceInstall.NT.Services]
+AddService=rx25dma,0x00000002,ServiceInstall
+
+[ServiceInstall]
+DisplayName=%Service%
+ServiceType=1
+StartType=3
+ErrorControl=1
+ServiceBinary=%13%\rx25dma.sys
+AddReg=DmaCompatibility
+
+[DmaCompatibility]
+HKR,Parameters,DmaRemappingCompatible,0x00010001,1
+
+[DeviceInstall.NT.Wdf]
+KmdfService=rx25dma,WdfInstall
+
+[WdfInstall]
+KmdfLibraryVersion=1.31
+
+[Strings]
+Provider="RX25 Development"
+Device="RX25 DMA Buffer Preparation Device"
+Service="RX25 DMA buffer-only service"
+Disk="RX25 DMA development package"
