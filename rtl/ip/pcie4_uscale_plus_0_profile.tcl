@@ -22,7 +22,7 @@ namespace eval ::as02_pcie_profile {
     variable CFG_SUBSYS_ID {0007}
     # 1234:C070 is the only ID the signed netuio-rx25.inf matches.  Without it
     # the RX25 card falls through to a class-code driver, and a USB xHCI driver
-    # poking at an FPGA xHCI-lookalike is what crashes this machine.
+    # poking at an FPGA xHCI-lookalike crashes the host it is installed in.
     # Keep the PCILeech BAR envelope, but advertise a network class instead of
     # serial-bus/USB: no in-box Windows driver claims a bare 1234:C070 Ethernet
     # device, so an unbound card stays inert instead of being driven.

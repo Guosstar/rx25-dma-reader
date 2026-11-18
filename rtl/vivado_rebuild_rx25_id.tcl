@@ -1,24 +1,43 @@
+# ---------------------------------------------------------------------------
+# vivado_rebuild_rx25_id.tcl -- resynthesise and reimplement an existing project
 #
-# Rebuild build_rx25_id in place.
+# The project is reopened in place rather than regenerated: it already has the
+# PCIe IP built with VID:DID = 1234:C070, which is what the signed
+# netuio-rx25.inf matches, so regenerating IP would only risk drift.  This is
+# the entry point for "only the RTL changed, keep everything else".
 #
-# That project already has the PCIe IP generated with VID:DID = 1234:C070, which
-# is what the signed netuio-rx25.inf matches, so there is no need to regenerate
-# IP or start from an empty project.  Only RTL changed:
-#   asmcehnk_tlps128_bar_controller.sv -- RX25 offsets no longer subtract
-#   base_address_register (which is 0 on this shell and pushed every access into
-#   the MSI-X window), and the MSI-X path is disabled in RX25 mode.
+# usage:
+#   vivado -mode batch -source vivado_rebuild_rx25_id.tcl \
+#          -tclargs <project.xpr>
 #
-# Set RX25_BUILD_DIR to the as02 project directory (the parent of
-# the build_* subdirectories) before running. usage: vivado -mode batch -source vivado_rebuild_rx25_id.tcl
+# Without an argument the project is read from
+#   $RX25_BUILD_DIR/$RX25_PROJECT/fpga.xpr
+# with RX25_PROJECT defaulting to build_rx25_id.
+# ---------------------------------------------------------------------------
 
-set proj [file join $::env(RX25_BUILD_DIR) build_rx25_id fpga.xpr]
+set proj ""
+if {[llength $argv] >= 1} { set proj [lindex $argv 0] }
+
+if {$proj eq ""} {
+    if {![info exists ::env(RX25_BUILD_DIR)]} {
+        error "no project given: pass -tclargs <project.xpr>, or set RX25_BUILD_DIR (and optionally RX25_PROJECT)"
+    }
+    set proj_name "build_rx25_id"
+    if {[info exists ::env(RX25_PROJECT)] && $::env(RX25_PROJECT) ne ""} {
+        set proj_name $::env(RX25_PROJECT)
+    }
+    set proj [file join $::env(RX25_BUILD_DIR) $proj_name fpga.xpr]
+}
+set proj [file normalize $proj]
+
+if {![file isfile $proj]} { error "project missing: $proj" }
 
 open_project $proj
 puts "REBUILD| project opened: [get_property NAME [current_project]]"
 
-# The three changed RTL files are referenced from ../src, so Vivado already sees
-# the new contents; resetting the run just makes sure it does not reuse the old
-# synthesis checkpoint.
+# The RTL is referenced from ../src relative to the script directory, so Vivado
+# already sees the new contents; resetting the run only makes sure it does not
+# reuse the old synthesis checkpoint.
 puts "REBUILD| resetting synth_1"
 reset_run synth_1
 launch_runs synth_1 -jobs 8

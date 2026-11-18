@@ -19,10 +19,10 @@
 
 set script_dir [file normalize [file dirname [info script]]]
 
-# Cap the worker count.  On this 10-core Haswell-EP box a full-width run drew
-# enough current to trip a 0x124 machine check during place (twice, at 23:13 and
-# 03:04).  Four threads costs some wall time but keeps the build finishing
-# instead of taking the host down with it.
+# Cap the worker count.  A full-width place has been seen to draw enough current
+# to trip a 0x124 machine check on small hosts.  Four threads costs some wall
+# time but keeps the build finishing instead of taking the host down with it.
+# Raise AS02_MAX_THREADS on a host that can take the load.
 if {![info exists ::env(AS02_MAX_THREADS)]} {
     set ::env(AS02_MAX_THREADS) 4
 }

@@ -10,9 +10,9 @@ set project_dir $script_dir
 if {[info exists ::env(AS02_PROJECT_DIR)] && $::env(AS02_PROJECT_DIR) ne ""} {
     set project_dir [file normalize $::env(AS02_PROJECT_DIR)]
 }
-# The two AS02MC04 boards in this machine carry -1-e silicon (confirmed
-# 2026-11-03).  A -2 build has no timing guarantee on them, and the 402.8 MHz
-# SFP domain is the tight one, so -1 is the only meaningful target here.
+# The reference AS02MC04 boards carry -1-e silicon (confirmed 2026-11-03).  A -2
+# build has no timing guarantee on them, and the 402.8 MHz SFP domain is the
+# tight one, so -1 is the only meaningful target here.
 set fpga_part xcku3p-ffvb676-1-e
 # local override for building against a different speed grade; take the value
 # verbatim so a part name is never treated as a path.

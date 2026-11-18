@@ -1,20 +1,56 @@
+# ---------------------------------------------------------------------------
+# vivado_bit_rx25_resp.tcl -- write a bitstream straight from a routed checkpoint
 #
-# Write the responder bitstream straight from the routed checkpoint.
+# The normal flow runs phys_opt_design after route_design and only then writes a
+# bitstream (vivado_close_timing_rx25.tcl).  When phys_opt is unusable on a host,
+# or the routed result already satisfies the gate, this script emits the
+# bitstream from the routed checkpoint instead, and still refuses to write one
+# on a hold violation.
 #
-# build_as02_role.ps1 died inside the post-route phys_opt_design pass (Vivado
-# exited with code 1 after "Ending IncrPlace Task", no ERROR line, peak memory
-# only 4 GB, disk had 760 GB free).  The routed result already meets the gate
-# that matters: WNS -0.226 / WHS +0.009, which is better than the initiator
-# image that is running on hardware right now (-0.371).  So skip phys_opt and
-# program the routed design directly.
+# It is role-agnostic: pass the initiator or the responder checkpoint, the gate
+# is identical.  A second copy that differed only in the project directory name
+# used to exist (vivado_bit_rx25_init_tmp.tcl); with an explicit checkpoint
+# argument there is nothing left for it to say.
 #
-# Set RX25_BUILD_DIR to the as02 project directory (the parent of
-# the build_* subdirectories) before running. usage: vivado -mode batch -source vivado_bit_rx25_resp.tcl
+# usage:
+#   vivado -mode batch -source vivado_bit_rx25_resp.tcl \
+#          -tclargs <routed.dcp> [<out.bit>]
+#
+# Without <routed.dcp> the checkpoint is read from
+#   $RX25_BUILD_DIR/$RX25_PROJECT/fpga.runs/impl_1/asmcehnk_as02mc04_top_routed.dcp
+# with RX25_PROJECT defaulting to build_rx25_resp.  The bitstream defaults to
+# fpga.bit in the checkpoint's own directory.
+# ---------------------------------------------------------------------------
 
-set dcp [file join $::env(RX25_BUILD_DIR) build_v4_resp fpga.runs impl_1 asmcehnk_as02mc04_top_routed.dcp]
-set out [file join $::env(RX25_BUILD_DIR) build_v4_resp fpga.runs impl_1 fpga.bit]
+set dcp ""
+set out ""
+if {[llength $argv] >= 1} { set dcp [lindex $argv 0] }
+if {[llength $argv] >= 2} { set out [lindex $argv 1] }
 
-if {![file exists $dcp]} { error "routed checkpoint missing: $dcp" }
+if {$dcp eq ""} {
+    if {![info exists ::env(RX25_BUILD_DIR)]} {
+        error "no checkpoint given: pass -tclargs <routed.dcp> \[<out.bit>\], or set RX25_BUILD_DIR (and optionally RX25_PROJECT)"
+    }
+    set proj_name "build_rx25_resp"
+    if {[info exists ::env(RX25_PROJECT)] && $::env(RX25_PROJECT) ne ""} {
+        set proj_name $::env(RX25_PROJECT)
+    }
+    set dcp [file join $::env(RX25_BUILD_DIR) $proj_name \
+                 fpga.runs impl_1 asmcehnk_as02mc04_top_routed.dcp]
+    puts "RESPBIT| checkpoint resolved from RX25_BUILD_DIR"
+}
+set dcp [file normalize $dcp]
+
+if {$out eq ""} {
+    set out [file join [file dirname $dcp] fpga.bit]
+}
+set out [file normalize $out]
+
+if {![file isfile $dcp]} { error "routed checkpoint missing: $dcp" }
+file mkdir [file dirname $out]
+
+puts "RESPBIT| input  $dcp"
+puts "RESPBIT| output $out"
 
 open_checkpoint $dcp
 
